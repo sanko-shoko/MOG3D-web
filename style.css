@@ -1,0 +1,132 @@
+@charset "UTF-8";
+
+/*----------------------------------------------
+ initiarize
+ ----------------------------------------------*/
+* {
+    margin: 0;
+    padding: 0;
+    font-style: normal;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+html {
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+body {
+    background-color: #FFF;  
+    font-family:
+        "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro",
+        "メイリオ", Meiryo, Osaka,
+        "ＭＳ Ｐゴシック", "MS PGothic",
+        sans-serif;
+
+    font-size: 22px;
+    color: #606060;
+}
+
+/*----------------------------------------------
+ grobal
+ ----------------------------------------------*/
+a{
+    text-decoration: underline;
+    color: #444;
+}
+
+.menu{
+    padding: 0px 4px; 
+}
+
+.base_width {
+    margin: 0 auto;
+    width: 98%;
+    min-width: 700px;
+    max-width: 1000px;
+}
+.sub_width {
+    margin: 0 auto;
+    width: 90%;
+}
+.spacer{
+    height: 40px;
+}
+.separator{
+    border-bottom: solid 2px #E0E0E0;
+}
+
+.font_small{
+    vertical-align:middle;
+    font-size: 14px;
+}
+.font_large{
+    vertical-align:middle;
+    font-size: 26px;
+}
+
+/*----------------------------------------------
+ header
+ ----------------------------------------------*/
+#header {
+    background-color: #E0EEE0;  
+}
+#header a{
+    color: #606060;
+}
+
+/*----------------------------------------------
+ footer
+ ----------------------------------------------*/
+#footer {
+    text-align: right;
+}
+
+/*----------------------------------------------
+ button
+ ----------------------------------------------*/
+
+.btn-flat-border {
+  display: inline-block;
+  padding: 0.3em 1em;
+  text-decoration: none;
+  color: #606060;
+  border: solid 2px #606060;
+  border-radius: 8px;
+  transition: .2s;
+}
+
+.btn-flat-border:hover {
+  background: #E0EEE0;
+}
+/*----------------------------------------------
+ head & text
+ ----------------------------------------------*/
+div.note_head1{
+    margin: 10px 0px;
+    padding: 0px 5px;
+    background-color: #D0D0F0;    
+}
+div.note_head2{   
+    margin: 10px 20px;
+    padding: 0px 5px;
+    border-bottom: solid 2px #D0D0F0;
+    border-left: solid 4px #D0D0F0;
+}
+div.note_head3{   
+    margin: 10px 30px;
+    padding: 0px 5px;
+    border-bottom: solid 2px #ACA;
+}
+div.note_text0{
+    margin: 0px 12px;
+}
+div.note_text1{
+    margin: 0px 12px;
+}
+div.note_text2{
+    margin: 0px 22px;
+}
+div.note_text3{
+    margin: 0px 32px;
+}
