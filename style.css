@@ -49,11 +49,12 @@ a{
     margin: 0 auto;
     width: 90%;
 }
+
 .spacer{
     height: 40px;
 }
 .separator{
-    border-bottom: solid 2px #E0E0E0;
+    border-bottom: solid 2px #EEEEEE;
 }
 
 .font_small{
@@ -69,7 +70,7 @@ a{
  header
  ----------------------------------------------*/
 #header {
-    background-color: #E0EEE0;  
+    background-color: #EEEEEE;  
 }
 #header a{
     color: #606060;
@@ -97,7 +98,7 @@ a{
 }
 
 .btn-flat-border:hover {
-  background: #E0EEE0;
+  background: #EEEEEE;
 }
 /*----------------------------------------------
  head & text
@@ -105,18 +106,18 @@ a{
 div.note_head1{
     margin: 10px 0px;
     padding: 0px 5px;
-    background-color: #D0D0F0;    
+    background-color: #EEEEEE;    
 }
 div.note_head2{   
     margin: 10px 20px;
     padding: 0px 5px;
-    border-bottom: solid 2px #D0D0F0;
-    border-left: solid 4px #D0D0F0;
+    border-bottom: solid 2px #EEEEEE;
+    border-left: solid 4px #EEEEEE;
 }
 div.note_head3{   
     margin: 10px 30px;
     padding: 0px 5px;
-    border-bottom: solid 2px #ACA;
+    border-bottom: solid 2px #EEEEEE;
 }
 div.note_text0{
     margin: 0px 12px;
