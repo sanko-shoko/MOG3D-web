@@ -57,9 +57,13 @@ a{
     border-bottom: solid 2px #EEEEEE;
 }
 
+.font_bold{
+    font-weight: 600;
+}
+
 .font_small{
     vertical-align:middle;
-    font-size: 18px;
+    font-size: 16px;
 }
 .font_large{
     vertical-align:middle;
@@ -88,33 +92,51 @@ a{
  ----------------------------------------------*/
 
 .btn-flat-border {
-  display: inline-block;
-  padding: 0.3em 1em;
-  text-decoration: none;
-  color: #606060;
-  border: solid 2px #606060;
-  border-radius: 8px;
-  transition: .2s;
+    display: inline-block;
+    padding: 0.3em 1em;
+    text-decoration: none;
+    color: #606060;
+    border: solid 2px #606060;
+    border-radius: 8px;
+    transition: .2s;
 }
 
 .btn-flat-border:hover {
-  background: #EEEEEE;
+    background: #EEEEEE;
 }
+
+.table_border{
+    border-collapse:separate;
+    border-spacing: 5px;
+}
+
+.td_border{
+    border-radius: 5px;
+    text-align: center;
+    padding: 5px 0;
+    width: 190px;
+
+    border:solid 1px #AAAAFF;
+}
+
 /*----------------------------------------------
  head & text
  ----------------------------------------------*/
 div.note_head1{
+    font-weight: 600;
     margin: 10px 0px;
     padding: 0px 5px;
     background-color: #EEEEEE;    
 }
 div.note_head2{   
+    font-weight: 600;
     margin: 10px 20px;
     padding: 0px 5px;
     border-bottom: solid 2px #EEEEEE;
     border-left: solid 4px #EEEEEE;
 }
 div.note_head3{   
+    font-weight: 500;
     margin: 10px 30px;
     padding: 0px 5px;
     border-bottom: solid 2px #EEEEEE;

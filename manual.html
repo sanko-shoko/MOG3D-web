@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+    <meta charset="UTF-8">
+    <title>MOG3D manual</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="header">
+        <table class="base_width">
+            <tr>
+                <td align="left">
+                    <a href="index.html">MOG3D</a>
+                </td>
+
+                <td align="right">
+                    <span class="menu"><a href = "manual.html">マニュアル</a></span>
+                    <span class="menu"><a href = "support.html">サポート</a></span>
+                </td>
+            </tr>
+        </table>         
+    </div>
+    <br>
+    
+    <div class="base_width">
+        <table id="title" class="sub_width">
+            <tr><td id="name" class="font_bold">マニュアル</td></tr>
+        </table>
+    </div>
+    <div class="base_width spacer separator"></div>
+   
+    <div class="base_width">    
+        <br>
+        <div class="note_text2">視点の変更方法やボクセルの加工方法を解説します。<br>１０分ほどで基本的な操作はマスターできると思います。</div>
+        <br>
+        <div class="note_head2">視点の変更</div>
+        <div class="note_text2">
+            スペースキーを押しながらマウス操作で視点を変更できます。
+            <table class="font_small">
+                <tr>
+                    <td>・左クリック＋移動</td>
+                    <td>：角度を変更</td>
+                </tr>
+                <tr>
+                    <td>・マウススクロール</td>
+                    <td>：スケールを変更</td>
+                </tr>
+                <tr>
+                    <td>・右クリック</td>
+                    <td>：クリックした場所を画面中央に移動</td>
+                </tr>
+                <tr>
+                    <td>・中央クリック＋移動</td>
+                    <td>：位置を変更</td>
+                </tr>
+           　</table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/view00.gif"><br>
+                視点の変更
+            </center>
+        </div>
+        
+        <div class="note_head2">ボクセルの加工</div>
+        <div class="note_text2">
+            画面左上のメニューからボクセルの加工方法を選択できます。
+            
+            <table class="font_small table_border">
+                <tr>
+                    <td class="td_border">block<br>ブロック編集モード</td>
+                    <td class="td_border">cut<br>輪郭カットモード</td>
+                    <td class="td_border">prim<br>基本形状モード</td>
+                </tr>
+                <tr>
+                    <td class="td_border">pen<br>ペンモード</td>
+                    <td class="td_border">fill<br>塗りつぶしモード</td>
+                    <td class="td_border">select<br>選択モード</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/edit00.gif"><br>
+                編集メニュー
+            </center>
+            <br>           
+            なお、加工時の色は画面左のパレットから変更できます。
+            <center class="font_small">
+                <img width="750" src="img/manual/edit01.gif"><br>
+                パレット（図中左上の灰色が選択中）
+            </center>
+        </div>
+        <br>
+        <div class="note_head2">block ブロック編集モード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左/右クリック</td>
+                    <td>：ボクセルの追加/削除</td>
+                </tr>
+                <tr>
+                    <td>・左/右クリック＋移動</td>
+                    <td>：ライン上でボクセルを追加/削除</td>
+                </tr>
+                <tr>
+                    <td>・Shift＋左/右クリック＋移動</td>
+                    <td>：領域内でボクセルを追加/削除</td>
+                </tr>
+                <tr>
+                    <td>・マウススクロール</td>
+                    <td>：ブロックのサイズを変更/td>
+                </tr>
+                <tr>
+                    <td>・中央クリック</td>
+                    <td>：選択した部分の色をスポイト</td>
+                </tr>
+            </table>  
+
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/block00.gif"><br>
+                ボクセルの追加(左クリック＋移動)
+            </center>
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/block01.gif"><br>
+                ボクセルの追加(Shift＋左クリック＋移動)
+            </center>
+        </div>
+        <br>
+        
+        <div class="note_head2">cut 輪郭カットモード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左/右クリック＋移動</td>
+                    <td>：選択した領域を削除(左：自由曲線、右：直線)</td>
+                </tr>
+                <tr>
+                    <td>・マウススクロール</td>
+                    <td>：円のサイズを変更</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/cut00.gif"><br>
+                輪郭のカット(左クリック：自由曲線、右クリック：直線)
+            </center>
+
+        </div>
+        <br>
+        
+        <div class="note_head2">prim 基本形状モード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左クリック</td>
+                    <td>：選択した場所に基本形状を設定</td>
+                </tr>
+                <tr>
+                    <td>・軸をクリック＋移動</td>
+                    <td>：基本形状の位置を移動</td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                    　形状・位置・サイズの変更は左メニューからも操作できます。
+                    </td>
+                </tr>
+            </table>
+            
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/prim00.gif"><br>
+                基本形状の設定（左クリック）と移動（左クリック＋移動）
+            </center>
+
+        </div>
+        <br>
+        
+        <div class="note_head2">pen ペンモード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左/右クリック</td>
+                    <td>：色の設定/クリア</td>
+                </tr>
+                <tr>
+                    <td>・左/右クリック＋移動</td>
+                    <td>：ライン上で色の設定/クリア</td>
+                </tr>
+                <tr>
+                    <td>・Shift＋左/右クリック＋移動</td>
+                    <td>：領域内で色の設定/クリア</td>
+                </tr>
+                <tr>
+                    <td>・マウススクロール</td>
+                    <td>：ブロックのサイズを変更/td>
+                </tr>
+                <tr>
+                    <td>・中央クリック</td>
+                    <td>：選択した部分の色をスポイト</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/pen00.gif"><br>
+                色の設定(左クリック＋移動)
+            </center>
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/pen01.gif"><br>
+                色の設定(Shift＋左クリック＋移動)
+            </center>
+        </div>
+        <br>
+        
+        <div class="note_head2">fill 塗りつぶしモード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左/右クリック</td>
+                    <td>：塗りつぶし/クリア</td>
+                </tr>
+                <tr>
+                    <td>・中央クリック</td>
+                    <td>：選択した部分の色をスポイト</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/fill00.gif"><br>
+                塗りつぶし(左クリック)
+            </center>
+        </div>
+        <br>
+        
+        <div class="note_head2">select 選択モード</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・左/右クリック</td>
+                    <td>：領域の設定/リセット</td>
+                </tr>
+                <tr>
+                    <td>・Ctrl+C （左メニューの[copy]ボタン）</td>
+                    <td>：選択した領域をコピー</td>
+                </tr>
+                <tr>
+                    <td>・Ctrl+X （左メニューの[cut]ボタン）</td>
+                    <td>：選択した領域をカット</td>
+                </tr>
+                <tr>
+                    <td>・Ctrl+V （左メニューの[paste]ボタン）</td>
+                    <td>：コピーorカットした領域をペースト</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/select00.gif"><br>
+                物体の選択と移動
+            </center>
+        </div>
+        <br>
+
+        <div class="note_head2">パレットの編集</div>
+        <div class="note_text2">
+            
+            <table class="font_small">
+                <tr>
+                    <td>・右クリック</td>
+                    <td>：色の編集画面の表示</td>
+                </tr>
+                <tr>
+                    <td>・左クリック＋移動</td>
+                    <td>：パレットの色の移動</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/palette00.gif"><br>
+                色の編集（右クリック）
+            </center>
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/palette01.gif"><br>
+                色の移動（左クリック＋移動）
+            </center>
+        </div>
+        <br>
+        <br>
+    </div>
+    <div class="base_width spacer separator"></div>
+    
+    <div id="footer">
+        <div class="base_width font_small">mog3d.com</div>
+    </div>
+</body>
+</html>
