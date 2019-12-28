@@ -37,73 +37,29 @@
             ここではMOG3Dの基本的な使い方を解説します。<br>
             合計で１５分程度の内容になります。</div>
         <br>
-        <div class="note_head2">視点の変更</div>
-        <div class="note_text2">
-            スペースキーを押しながらマウスの操作で視点を操作できます。<br>
-            <table class="font_small">
-                <tr>
-                    <td>・左ドラッグ</td>
-                    <td>：角度を変更</td>
-                </tr>
-                <tr>
-                    <td>・マウススクロール</td>
-                    <td>：スケールを変更</td>
-                </tr>
-                <tr>
-                    <td>・右クリック</td>
-                    <td>：クリックした場所を画面中央に移動</td>
-                </tr>
-                <tr>
-                    <td>・中央ドラッグ</td>
-                    <td>：位置を変更</td>
-                </tr>
-            </table>  
-            <span class="font_small">
-                画面左の3D座標アイコンをクリックした後であれば、スペースキーなしで視点を操作できます。
-            </span>
-            <br>
-            <br>
-            <center class="font_small">
-                <img width="750" src="img/manual/view00.gif"><br>
-                視点の変更
-            </center>
-            <br>
-            
-            画面左にあるボタンを押すことで所定の視点に変更することもできます。<br>
-            <table class="font_small">
-                <tr>
-                    <td>・"home"ボタン</td>
-                    <td>：基準視点に移動します。もう一度押すと少し離れた視点に移動します。</td>
-                </tr>
-            </table>  
-            <br>
-            <center class="font_small">
-                <img width="750" src="img/manual/edit01.gif"><br>
-                視点の変更ボタン
-            </center>
-        </div>
-        <br>
         
-        <div class="note_head2">ボクセルの加工</div>
+        <div class="note_head2">編集モード</div>
         <div class="note_text2">
-            画面左上のメニューからボクセルの加工方法を選択できます。
+            画面左上のアイコンから編集モードを選択できます。
            
             <table class="font_small table_border">
                 <tr>
                     <td class="td_border">block<br>ブロックモード</td>
                     <td class="td_border">cut<br>カットモード</td>
                     <td class="td_border">prim<br>基本形状モード</td>
+                    <td class="td_border">view<br>視点操作モード</td>
                 </tr>
                 <tr>
                     <td class="td_border">pen<br>ペンモード</td>
                     <td class="td_border">fill<br>塗りつぶしモード</td>
                     <td class="td_border">select<br>選択モード</td>
+                    <td class="td_border">render<br>レンダーモード</td>
                 </tr>
             </table>  
             <br>
             <center class="font_small">
                 <img width="750" src="img/manual/edit00.gif"><br>
-                編集メニュー
+                編集モードのアイコン
             </center>
             <br>           
             加工時に使う色は画面左のパレットから変更できます。
@@ -120,6 +76,10 @@
             色の種類や並びを変更できます。<br>
             
             <table class="font_small">
+                <tr>
+                    <td>・左クリック</td>
+                    <td>：パレットの色の選択</td>
+                </tr>
                 <tr>
                     <td>・左ドラッグ</td>
                     <td>：パレットの色の移動</td>
@@ -146,6 +106,54 @@
 
         </div>
         <br>
+        
+        <div class="note_head2">view 視点操作モード</div>
+        <div class="note_text2">
+            マウスの操作で視点を操作できます。<br>
+            <table class="font_small">
+                <tr>
+                    <td>・左ドラッグ</td>
+                    <td>：角度を変更</td>
+                </tr>
+                <tr>
+                    <td>・スクロール</td>
+                    <td>：スケールを変更</td>
+                </tr>
+                <tr>
+                    <td>・右クリック</td>
+                    <td>：クリックした場所を画面中央に移動</td>
+                </tr>
+                <tr>
+                    <td>・中央ドラッグ</td>
+                    <td>：位置を変更</td>
+                </tr>
+            </table>  
+            <span class="font_small">
+                また、他の編集モード中であっても「スペースキー」を押している間は一時的に視点操作が可能です。
+            </span>
+            <br>
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/view00.gif"><br>
+                視点の変更
+            </center>
+            <br>
+            
+            画面左にあるボタンを押すことで所定の視点に変更することもできます。<br>
+            <table class="font_small">
+                <tr>
+                    <td>・"home"ボタン</td>
+                    <td>：基準視点に移動します。もう一度押すと少し離れた視点に移動します。</td>
+                </tr>
+            </table>  
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/edit01.gif"><br>
+                視点の変更ボタン
+            </center>
+        </div>
+        <br>
+        
         <div class="note_head2">block ブロックモード</div>
         <div class="note_text2">
             
@@ -171,7 +179,7 @@
                     <td>：選択した部分の色をスポイト</td>
                 </tr>
                 <tr>
-                    <td>・Alt＋左ドラッグ</td>
+                    <td>・'E'キー＋左ドラッグ</td>
                     <td>：ブロックの拡張</td>
                 </tr>
             </table>  
@@ -354,7 +362,18 @@
         </div>
         <br>
         
-        <div class="note_head2">レイヤーの編集</div>
+        <div class="note_head2">render レンダーモード</div>
+        <div class="note_text2">
+            レンダーモードでは光源や背景色を調整して画像を仕上げます。  <br>     
+            <br>
+            <center class="font_small">
+                <img width="750" src="img/manual/render.png"><br>
+                レンダー画面
+            </center>
+        </div>
+        <br>   
+        
+        <div class="note_head2">layer レイヤーの編集</div>
         <div class="note_text2">
             画面左下のメニューからレイヤーの追加や解像度の変更などができます。
             <table class="font_small">
@@ -384,18 +403,6 @@
         </div>
         <br>
 
-        <div class="note_head2">レンダーモード</div>
-        <div class="note_text2">
-            メニューバーのmodeボタンからレンダーモードに切り替えできます。<br>
-            レンダーモードでは光源や背景色を調整して画像を仕上げます。  <br>     
-            <br>
-            <center class="font_small">
-                <img width="750" src="img/manual/render.png"><br>
-                レンダー画面
-            </center>
-        </div>
-        <br>   
-        
         <div class="note_head2">最後に</div>
         <div class="note_text2">
             基本的な操作は以上になります。<br>
