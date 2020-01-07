@@ -1,0 +1,494 @@
+
+// namespace
+var spio = {};
+
+(function () {
+    if (typeof (window) !== "undefined") {
+        spio.global = window;
+        spio.global.spio = spio;
+    } else {
+        spio.global = global;
+    }
+
+    if (typeof (module) !== "undefined") {
+        module.exports = spio;
+    }
+
+})();
+
+(function () {
+
+    spio.Request = function () {};
+
+    spio.Request.prototype.get = function (url) {
+        var func = function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.responseType = "arraybuffer";
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
+                    if (xhr.response) {
+                        var bytes = new Uint8Array(xhr.response);
+                        resolve(bytes);
+                    }
+                }
+            };
+
+            xhr.send(null);
+        };
+        return new Promise(func);
+    };
+
+})();
+
+
+(function () {
+
+    spio.Node = function () {
+        this.name = "";
+        this.type = null;
+        this.size = null;
+        this.data = null;
+        this.cnodes = [];
+    };
+
+    spio.Node.prototype.getCNodes = function(name) {
+        if (name == undefined) {
+            return this.cnodes;
+        }
+        else {
+            var ret = [];
+            for (var i = 0; i < this.cnodes.length; i++) {
+                if (this.cnodes[i].name == name) {
+                    ret.push(this.cnodes[i]);
+                }
+            }
+            return ret;
+        }
+    }
+
+    spio.Node.prototype.getCNode = function (name, p = 0) {
+        var list = this.getCNodes(name);
+        return (p < list.length) ? list[p] : null;
+    }
+
+    spio.Node.prototype.getTxt = function (p = 0) {
+        if (this.type != "TXT_NODE") return null;
+
+        const list = (this.size > 0) ? this.data.split(",") : [];
+        return (p < list.length) ? list[p] : null;
+    }
+
+    spio.Node.prototype.getBin = function (type, p = 0) {
+        let dv = new DataView(this.data.buffer);
+
+        var ret = null;
+        switch (type) {
+            case "Int8": ret = dv.getInt8(p); break;
+            case "Int16": ret = dv.getInt16(p, true); break;
+            case "Int32": ret = dv.getInt32(p, true); break;
+            case "Uint8": ret = dv.getUint8(p); break;
+            case "Uint16": ret = dv.getUint16(p, true); break;
+            case "Uint32": ret = dv.getUint32(p, true); break;
+            case "Float32": ret = dv.getFloat32(p, true); break;
+            case "Float64": ret = dv.getFloat64(p, true); break;
+        }
+        return ret;
+    }
+    
+    spio.Node.prototype.elms = function () {
+        var ret = 0;
+        switch (this.type) {
+            case "TXT_NODE": ret = ((this.size > 0) ? this.data.split(",") : []).length; break;
+            case "BIN_NODE": ret = this.size; break;
+            case "OBJ_NODE": ret = this.cnodes.length; break;
+            default: break;
+        }
+        return ret;
+    }
+
+
+})();
+ 
+ 
+ 
+(function () {
+    spio.Reader = function () { };
+
+    spio.Reader.prototype.parse = function (url, func) {
+        var self = this;
+        var req = new spio.Request();
+        req.get(url).then(function (bytes) { func(_parse(bytes)); } );
+    };
+
+    var _parse = function (bytes) {
+
+        var _getv = function (pos) {
+            return String.fromCharCode(bytes[pos]);
+        }
+
+        var indent = [];
+        var nodes = [];
+        indent.push(-1);
+        nodes.push(new spio.Node());
+
+        for (var i = 0; i < bytes.length; ) {
+            var node = new spio.Node();
+            
+            var pos = i;
+            {
+                for (; ; pos++) {
+                    var c = _getv(pos);
+                    if (c == '(' || c == '{' || c == '[') break;
+                }
+                indent.push(pos - i);
+
+                switch (_getv(pos)) {
+                    case '(': node.type = "TXT_NODE"; break;
+                    case '{': node.type = "BIN_NODE"; break;
+                    case '[': node.type = "OBJ_NODE"; break;
+                    default: break;
+                }
+                pos++;
+            }
+
+            {
+                for (; ; pos++) {
+                    if (_getv(pos) == ')' || _getv(pos) == '}' || _getv(pos) == ']') break;
+                    node.name += _getv(pos);
+                }
+                pos++;
+            }
+            {
+                var spos = pos;
+
+                switch (node.type) {
+                    case "TXT_NODE":
+                        {
+                            // data step
+                            for (; ; pos++) {
+                                if (_getv(pos) == '\n') break;
+                            }
+                            pos++;
+
+                            node.size = pos - spos - 1;
+                            node.data = (new TextDecoder('utf-8')).decode(bytes.slice(spos, spos + node.size));
+                            break;
+                        }
+                    case "BIN_NODE":
+                        {
+                            var option = "";
+
+                            // size step
+                            for (; ; pos++) {
+                                if (_getv(pos) == ',') break;
+                                option += _getv(pos);
+                            }
+                            pos++;
+                            spos = pos;
+
+                            node.size = Number(option);
+                            node.data = bytes.slice(spos, spos + node.size);
+
+                            // data step
+                            pos += node.size + 1;
+                            break;
+                        }
+                    case "OBJ_NODE":
+                        {
+                            var option = "";
+
+                            // size step
+                            for (; ; pos++) {
+                                if (_getv(pos) == '\n') break;
+                                option += _getv(pos);
+                            }
+                            pos++;
+
+                            node.data = null;
+                            node.size = Number(option);
+                            break;
+                        }
+                }
+                nodes.push(node);
+            }
+
+            i += (pos - i);
+        }
+
+        var ptrs = [];
+
+        for (var i = 1; i < nodes.length; i++) {
+            var node = nodes[i];
+
+            const crnt = indent[i];
+            const prev = indent[i - 1];
+            if (crnt > prev) {
+                {
+                    ptrs.push(nodes[i - 1]);
+                }
+            }
+            else if (crnt < prev) {
+                for (var j = 0; j < prev - crnt; j++) {
+                    ptrs.pop();
+                }
+            }
+            var base = ptrs[crnt];
+
+            base.cnodes.push(node);
+        }
+        return nodes[0];
+    }
+
+})();
+
+(function () {
+
+    spio.Code = function () { };
+
+    spio.Code.prototype.get1BitArray = function (src, bits) {
+        var dst = new Array(bits);
+
+        for (var i = 0; i < dst.length; i++) {
+            const a = Math.floor(i / 8);
+            const b = i % 8;
+            dst[i] = this.getBit(src[a], b);
+        }
+        return dst;
+    }
+
+    spio.Code.prototype.getBit = function (byte, p) {
+        const mask = 0x01 << p;
+        return (byte & mask) ? 1 : 0;
+    }
+
+    spio.Code.prototype.hmNode = function (){
+        this.val = -1;
+        this.child = [-1, -1];
+    };
+
+    spio.Code.prototype.hmMakeNode = function (table) {
+        var nodes = new Array(1);
+
+        nodes[0] = new this.hmNode();
+
+        for (var i = 0; i < table.length; i++) {
+            const bits = table[i];
+            if (bits.length == 0) continue;
+
+            var node = nodes[0];
+            for (var j = 0; j < bits.length; j++) {
+                const bit = bits[j];
+                if (node.child[bit] == -1) {
+                    node.child[bit] = nodes.length;
+
+                    node = new this.hmNode();
+                    nodes.push(node);
+                }
+                else {
+                    node = nodes[node.child[bit]];
+                }
+            }
+            node.val = i;
+        }
+        return nodes;
+    }
+
+    spio.Code.prototype.hmMakeTableFromLngs = function (lngs) {
+        var table = new Array(lngs.length);
+        table.fill([]);
+
+        var maxv = 0;
+        var minv = 255;
+        for (var i = 0; i < lngs.length; i++) {
+            const n = lngs[i];
+            if (n == 0) continue;
+            maxv = Math.max(n, maxv);
+            minv = Math.min(n, minv);
+        }
+        if (maxv == 0) {
+            return table;
+        }
+        var bits = [];
+        for (var j = 0; j < minv; j++) {
+            bits.push(0);
+        }
+
+        var prev = 0;
+        for (var s = minv; s <= maxv; s++) {
+            for (var i = 0; i < lngs.length; i++) {
+                if (lngs[i] != s) continue;
+
+                if (prev > 0) {
+                    for (var j = bits.length - 1; j >= 0; j--) {
+                        if (bits[j] == 0) {
+                            bits[j] = 1;
+                            break;
+                        }
+                        else {
+                            bits[j] = 0;
+                        }
+                    }
+                    for (var j = 0; j < s - prev; j++) {
+                        bits.push(0);
+                    }
+                }
+                prev = s;
+                table[i] = Array.from(bits);
+            }
+        }
+        return table;
+    }
+
+    spio.Code.prototype.hmMakeTableFromCnts = function (cnts) {
+        var table = new Array(cnts.length);
+        table.map(function () { return new Array() });
+
+        {
+            var n = 0;
+            var id = -1;
+            for (var i = 0; i < cnts.length; i++) {
+                if (cnts[i] > 0) {
+                    n++;
+                    id = i;
+                }
+            }
+            if (n == 0) {
+                return table;
+            }
+            if (n == 1) {
+                table[id].push(0);
+                return table;
+            }
+        }
+
+        var Node = function () {
+            this.cnt = 0;
+            this.parent = null;
+        };
+
+        var nodes = [];
+        for (var i = 0; i < cnts.length; i++) {
+            var node = new Node();
+            node.cnt = cnts[i];
+            node.parent = null;
+            nodes.push(node);
+        }
+
+        var heads = [];
+        for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].cnt > 0) {
+                heads.push(nodes[i]);
+            }
+        }
+
+
+        while (heads.length >= 2) {
+            var node = new Node();
+
+            for (var j = 0; j < 2; j++) {
+                var id = 0;
+                var minv = Number.MAX_SAFE_INTEGER;
+                for (var k = 0; k < heads.length; k++) {
+                    if (heads[k].cnt < minv) {
+                        minv = heads[k].cnt;
+                        id = k;
+                    }
+                }
+                node.cnt += heads[id].cnt;
+                heads[id].parent = node;
+
+                heads.splice(id, 1);
+            }
+
+            heads.push(node);
+        }
+
+        var lngs = new Array(cnts.length);
+        for (var i = 0; i < lngs.length; i++) {
+            lngs[i] = 0;
+
+            var node = nodes[i];
+            while (node.parent != null) {
+                lngs[i]++;
+                node = node.parent;
+            }
+        }
+        return this.hmMakeTableFromLngs(lngs);
+    }
+
+    spio.Code.prototype.lzssDecode = function (data, code) {
+        var dst = new Array();
+        if (data.length == 0) return dst;
+
+        for (var i = 0; i < data.length; i++) {
+            if (data[i] != code) {
+                dst.push(data[i]);
+            }
+            else {
+                const search = data[i + 1];
+                const length = data[i + 2];
+                const base = dst.length;
+                for (var j = 0; j < length; j++) {
+                    const v = dst[base - search + j];
+                    dst.push(v);
+                }
+                i += 2;
+            }
+        }
+
+        return dst;
+    }
+
+    spio.Code.prototype.zlDecode = function (table, src, code, v0, v1) {
+        var dst = [];
+
+        const nodes = this.hmMakeNode(table);
+        var node = nodes[0];
+        for (var i = 0; i < src.length; i++) {
+            const bit = src[i];
+            node = nodes[node.child[bit]];
+            const val = node.val;
+
+            if (val >= 0) {
+                dst.push(val);
+                node = nodes[0];
+            }
+            if (val == code) {
+                {
+                    var v = 0;
+                    for (var j = 0; j < v0; j++ , i++) {
+                        v = v + (src[i + 1] << j);
+                    }
+                    dst.push(v);
+                }
+                {
+                    var v = 0;
+                    for (var j = 0; j < v1; j++ , i++) {
+                        v = v + (src[i + 1] << j);
+                    }
+                    dst.push(v);
+                }
+            }
+        }
+
+        return dst;
+    }
+
+    spio.Code.prototype.table256 = function() {
+        var cnts = new Array(256 + 1);
+
+        for (var i = 0; i < 256; i++) {
+            var sum = 0;
+            for (var j = 0; j < 7; j++) {
+                if (this.getBit(i, j) != this.getBit(i, j + 1)) {
+                    sum++;
+                }
+            }
+            cnts[i] = Math.pow(2, 7 - sum);
+        }
+        cnts[256] = Math.pow(2, 7 - 0);
+        return this.hmMakeTableFromCnts(cnts);
+    }
+})();
