@@ -40,6 +40,14 @@ var spio = {};
         return new Promise(func);
     };
 
+    spio.toText(arr){
+        var str = "";
+        for (var i = 0; i < arr.length ; i++){
+            str += String.fromCharCode(arr[i]);
+        }
+        return str;
+    }
+
 })();
 
 
@@ -173,7 +181,7 @@ var spio = {};
                             pos++;
 
                             node.size = pos - spos - 1;
-                            node.data = (new TextDecoder('utf-8')).decode(bytes.slice(spos, spos + node.size));
+                            node.data = spio.toText(bytes.slice(spos, spos + node.size));
                             break;
                         }
                     case "BIN_NODE":
