@@ -12,7 +12,11 @@
     <script type="text/javascript" src="https://www.mog3d.com/mog3d.txt"></script>
 
     <script type="text/javascript">
-        //window.addEventListener('load', mogtest);
+        if ((navigator.userAgent.indexOf('iPhone') > 0 && navigator.userAgent.indexOf('iPad') == -1) || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+
+        } else {
+            window.addEventListener('load', mogtest);
+        }
     </script>
 </head>
 

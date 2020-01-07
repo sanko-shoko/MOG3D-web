@@ -443,7 +443,7 @@ var mogtest = function () {
             1,
             10000
         );
-        camera.position.set(40, 50, +130);
+        camera.position.set(40, 70, +130);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         // コンテナーを作成
