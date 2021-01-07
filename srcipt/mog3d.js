@@ -1,507 +1,355 @@
+//--------------------------------------------------------------------------------
+// Copyright (c) 2019-2020, sanko-shoko. All rights reserved.
+//--------------------------------------------------------------------------------
 
-// namespace
-var mog = { };
+(function () { 
+    'use strict';
 
-(function () {
+    mog.build = function (union) {
+        console.time(union.path + ' build');
+        function makeObject(unit) {
+            const object = new THREE.Object3D();
 
-    mog.Transform = function () {
-        this.pos = [0, 0, 0];
-        this.ang = [0, 0, 0];
-        this.scl = [1, 1, 1];
-    };
+            for (let i = 0; i < unit.models.length; i++) {
+                const model = unit.models[i];
 
-    mog.Model = function () {
-        this.name = "";
-        this.trns = new mog.Transform();
-        this.dsize = [0, 0, 0];
+                const bgeom = new THREE.BufferGeometry();
+                bgeom.setAttribute('position', new THREE.BufferAttribute(model.buffer.vtxs, 3));
+                bgeom.setAttribute('normal', new THREE.BufferAttribute(model.buffer.nrms, 3, true));
+                bgeom.setAttribute('uv', new THREE.BufferAttribute(model.buffer.uvs, 2, true));
+                
+                let texture;
+                {
+                    texture = new THREE.DataTexture(model.buffer.dtex.data, model.buffer.dtex.dsize[0], model.buffer.dtex.dsize[1], THREE.RGBFormat, THREE.UnsignedByteType);
+                    texture.magFilter = THREE.NearestFilter;
+                    texture.minFilter = THREE.NearestFilter;
+                    
+                    texture.generateMipmaps = false;
+                }
+                const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.FrontSide, roughness: 1.0});
+                const mesh = new THREE.Mesh(bgeom, material);
+                mesh.texture = texture;
 
-        this.vmap = [];
-        this.cmap = [];
-    };
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
 
-    mog.Unit = function () {
-        this.name = "";
+                mesh.position.set(-unit.dsize[0] / 2.0, 0.0, -unit.dsize[2] / 2.0);
+                const wrap = new THREE.Object3D();
+                wrap.add(mesh);
 
-        this.guide0 = false;
-        this.guide1 = false;
-        this.smooth = false;
-
-        this.palette = [];
-
-        this.models = [];
-    };
-
-    mog.Layout = function () {
-        this.name = "";
-        this.trns = new mog.Transform();
-        this.unit = null;
-    };
-
-    mog.Stage = function () {
-        this.units = [];
-        this.layouts = [];
-
-        this.object = null;
-    };
-
-
-})();
-
-(function () {
-
-    mog.load = function (url, func) {
-        var reader = new spio.Reader();
-
-        reader.parse(url,
-            function (root) {
-                var stage = mog.load_v1(root);
-                build(stage);
-                func(stage);
+                object.add(wrap);
             }
-        );
-
-    };
-
-    mog.load_v1 = function (root) {
-        var stage = new mog.Stage();
-
-        var code = new spio.Code();
-        {
-            var n_units = root.getCNodes("unit");
-
-            for (var i = 0; i < n_units.length; i++) {
-                var unit = new mog.Unit();
-
-                const n_unit = n_units[i];
-                const n_option = n_unit.getCNode("option");
-                if (n_option != null) {
-                    const size = n_option.elms();
-                    for (var p = 0; p < size; p++) {
-                        let o = n_option.getTxt(p);
-                        if (o == "edge") unit.guide0 = true;
-                        if (o == "grid") unit.guide1 = true;
-                        if (o == "smooth") unit.smooth = true;
-                    }
-                }
-
-                const n_name = n_unit.getCNode("name");
-                {
-                    unit.name = n_name.getTxt();
-                }
-
-                const n_palette = n_unit.getCNode("palette");
-                {
-                    const n_size = n_palette.getCNode("size");
-                    const size = Number(n_size.getTxt(0));
-                    unit.palette = new Array(size);
-                    const n_cols = n_palette.getCNode("cols");
-
-                    for (var c = 0; c < size; c++) {
-                        unit.palette[c] = [n_cols.data[c * 4 + 0], n_cols.data[c * 4 + 1], n_cols.data[c * 4 + 2], n_cols.data[c * 4 + 3]];
-                    }
-                }
-
-                const n_models = n_unit.getCNodes("model");
-
-                for (var m = 0; m < n_models.length; m++) {
-                    var model = new mog.Model();
-
-                    const n_model = n_models[m];
-                    { //
-                        const n_name = n_model.getCNode("name");
-                        {
-                            model.name = n_name.getTxt();
-                        }
-
-                        const n_size = n_model.getCNode("size");
-                        {
-                            model.dsize[0] = Number(n_size.getTxt(0));
-                            model.dsize[1] = Number(n_size.getTxt(1));
-                            model.dsize[2] = Number(n_size.getTxt(2));
-                        }
-
-                        const n_trns = n_model.getCNode("trns");
-                        {
-                            model.trns.pos[0] = n_trns.getBin("Float32", 0 * 4);
-                            model.trns.pos[1] = n_trns.getBin("Float32", 1 * 4);
-                            model.trns.pos[2] = n_trns.getBin("Float32", 2 * 4);
-                            model.trns.ang[0] = n_trns.getBin("Float32", 3 * 4);
-                            model.trns.ang[1] = n_trns.getBin("Float32", 4 * 4);
-                            model.trns.ang[2] = n_trns.getBin("Float32", 5 * 4);
-                            model.trns.scl[0] = n_trns.getBin("Float32", 6 * 4);
-                            model.trns.scl[1] = n_trns.getBin("Float32", 7 * 4);
-                            model.trns.scl[2] = n_trns.getBin("Float32", 8 * 4);
-                        }
-                    }
-
-                    //console.log(model);
-
-                    const n_bin0 = n_model.getCNode("bin0");
-                    const n_bin1 = n_model.getCNode("bin1");
-
-                    var memA = null;
-                    var memB = null;
-                    var memC = null;
-                    {
-                        var tableB = code.table256();
-
-                        var p = 0;
-                        {
-                            const size = n_bin0.getBin("Int32", p);
-                            p += 4;
-                            const offset = n_bin0.getBin("Uint8", p);
-                            p += 1;
-
-                            memA = n_bin0.data.slice(p, p + size);
-                            p += size;
-                        }
-                        {
-                            const size = n_bin0.getBin("Int32", p);
-                            p += 4;
-                            const offset = n_bin0.getBin("Uint8", p);
-                            p += 1;
-
-                            if (size > 0) {
-                                const bits = size * 8 - offset;
-
-                                var bs = n_bin0.data.slice(p, p + size);
-                                var arr = code.get1BitArray(bs, bits);
-
-                                var mem = code.zlDecode(tableB, arr, 256, 8, 8);
-                                memB = code.lzssDecode(mem, 256);
-                            }
-                        }
-                    }
-                    {
-                        var tableC = null;
-                        var base = 0;
-                        const PALETTE_CODE = 256;
-
-                        var p = 0;
-                        {
-                            const size = n_bin1.getBin("Int32", p);
-                            p += 4;
-                            const offset = n_bin1.getBin("Uint8", p);
-                            p += 1;
-                            {
-                                var lngs = new Array(PALETTE_CODE + 1);
-                                lngs.fill(0);
-                                for (var c = 0; c < size; c++) {
-                                    const s = n_bin1.getBin("Uint8", p + 0);
-                                    const b = n_bin1.getBin("Uint8", p + 1);
-                                    p += 2;
-                                    lngs[s] = b;
-                                }
-                                lngs[PALETTE_CODE] = offset;
-                                tableC = code.hmMakeTableFromLngs(lngs);
-                            }
-                            //base = 2 * size + 1;
-                            //console.log(tableC);
-                        }
-                        {
-                            const size = n_bin1.getBin("Int32", p);
-                            p += 4;
-                            const offset = n_bin1.getBin("Uint8", p);
-                            p++;
-
-                            if (size > 0) {
-                                const bits = size * 8 - offset;
-                                var bs = n_bin1.data.slice(p, p + size);
-                                var arr = code.get1BitArray(bs, bits);
-
-                                var mem = code.zlDecode(tableC, arr, PALETTE_CODE, 8, 8);
-                                memC = code.lzssDecode(mem, PALETTE_CODE);
-
-                            }
-                        }
-                    }
-                    unit.models.push(model);
-
-                    decode1(model, memA, memB, memC, model.dsize);
-                }
-                stage.units.push(unit);
-            }
-        }
-        {
-            var n_layouts = root.getCNodes("layout");
-            for (var i = 0; i < n_layouts.length; i++) {
-                var layout = new mog.Layout();
-
-                const n_layout = n_layouts[i];
-                const n_name = n_layout.getCNode("name");
-                {
-                    layout.name = n_name.getTxt();
-                }
-
-                const n_trns = n_layout.getCNode("trns");
-                {
-                    layout.trns.pos[0] = n_trns.getBin("Float32", 0 * 4);
-                    layout.trns.pos[1] = n_trns.getBin("Float32", 1 * 4);
-                    layout.trns.pos[2] = n_trns.getBin("Float32", 2 * 4);
-                    layout.trns.ang[0] = n_trns.getBin("Float32", 3 * 4);
-                    layout.trns.ang[1] = n_trns.getBin("Float32", 4 * 4);
-                    layout.trns.ang[2] = n_trns.getBin("Float32", 5 * 4);
-                    layout.trns.scl[0] = n_trns.getBin("Float32", 6 * 4);
-                    layout.trns.scl[1] = n_trns.getBin("Float32", 7 * 4);
-                    layout.trns.scl[2] = n_trns.getBin("Float32", 8 * 4);
-                }
-
-                const n_unit = n_layout.getCNode("unit");
-                {
-                    layout.unit = Number(n_unit.getTxt());
-                }
-
-                stage.layouts.push(layout);
-            }
-        }
-        return stage;
-    }
-
-
-    var decode1 = function (model, memA, memB, memC, dsize) {
-
-        const step = 8;
-        const msize = [
-            Math.floor((dsize[0] + 7) / step),
-            Math.floor((dsize[1] + 7) / step),
-            Math.floor((dsize[2] + 7) / step)];
-
-        model.vmap = new Array(dsize[0] * dsize[1] * dsize[2]);
-        model.cmap = new Array(dsize[0] * dsize[1] * dsize[2]);
-
-        var getBit = function (byte, p) {
-            const mask = 0x01 << p;
-            return (byte & mask) ? 1 : 0;
+            return object;
         };
 
-        var a = 0;
-        var b = 0;
-        var c = 0;
-        for (var z = 0; z < msize[2]; z++) {
-            for (var y = 0; y < msize[1]; y++) {
-                for (var x = 0; x < msize[0]; x++) {
+        union.object = new THREE.Object3D();
 
-                    const i = Math.floor(a / step);
-                    const cnt = getBit(memA[i], a % step);
-                    a++;
-                    if (cnt == 0) continue;
+        if (union.layouts.length > 0) {
 
-                    var bb = 0;
-                    for (var zz = 0; zz < step; zz++) {
-                        for (var yy = 0; yy < step; yy++) {
-                            for (var xx = 0; xx < step; xx++) {
-                                const ix = x * step + xx;
-                                const iy = y * step + yy;
-                                const iz = z * step + zz;
+            for (let l = 0; l < union.layouts.length; l++) {
+                const layout = union.layouts[l];
 
-                                if (xx == 0) {
-                                    bb = memB[b++];
-                                }
-                                if (ix >= dsize[0] || iy >= dsize[1] || iz >= dsize[2]) continue;
+                const vox = makeObject(layout.unit);
+                vox.position.set(layout.pos[0], layout.pos[1], layout.pos[2]);
+                vox.rotation.set(layout.ang[0] * Math.PI / 180, layout.ang[1] * Math.PI / 180, layout.ang[2] * Math.PI / 180);
+                vox.scale.set(layout.scl[0], layout.scl[1], layout.scl[2]);
 
-                                const p = iz * dsize[0] * dsize[1] + iy * dsize[0] + ix;
-                                if (getBit(bb, xx) == 0) {
-                                    model.vmap[p] = -127;
-                                    model.cmap[p] = -1;
-                                }
-                                else {
-                                    model.vmap[p] = +127;
-                                    model.cmap[p] = Math.max(0, memC[c]);
-                                    c++;
-                                }
-                            }
-                        }
-                    }
-                }
+                union.object.add(vox);
             }
+        }
+        else {
+            union.object.add(makeObject(union.units[0]));
+        }
+
+        for (let u = 0; u < union.units.length; u++) {
+            for (let i = 0; i < union.units[u].models.length; i++) {
+                const model = union.units[u].models[i];
+                model.buffer = null;
+            }
+        }
+        console.timeEnd(union.path + ' build');    
+    }
+
+    mog.load = function(url, post, params = {}){
+        if (0) {
+            const loaded = function (union) {
+                if (union) mog.build(union);
+                post(union);
+            };
+            mog._load(url, loaded, params);
+        }
+        else{
+            const wk = new Worker(_url('/js/mog3d.js'));
+            wk.onmessage = function(message) {
+                if (message.data.union) { mog.build(message.data.union); }
+                post(message.data.union);
+            };
+            wk.postMessage({url: url, params: params, });
         }
     }
 
-    var build = function (stage) {
-        const material = new THREE.MeshPhongMaterial({
-            vertexColors: THREE.FaceColors ,
-            //side: THREE.DoubleSide
-        });
-        for (var u = 0; u < stage.units.length; u++) {
-            var group = new THREE.Object3D();
-
-            var unit = stage.units[u];
-            var box = [];
-
-            for (var i = 0; i < unit.palette.length; i++) {
-                const b = new THREE.BoxGeometry(1, 1, 1);
-                const c = unit.palette[i];
-                const t = (c[0] << 16 + c[1] << 8 + c[2]);
-                for (var j = 0; j < b.faces.length; j += 2) {
-                    b.faces[j].color.setRGB(c[0] / 255, c[1] / 255, c[2] / 255);
-                    b.faces[j + 1].color.setRGB(c[0] / 255, c[1] / 255, c[2] / 255);
-                }
-                box.push(b);
-            }
-
-            for (var i = 0; i < stage.units[u].models.length; i++) {
-                var geom = new THREE.Geometry();
-
-                var model = stage.units[u].models[i];
-
-                var offset = [(model.dsize[0] - 1) / 2, (model.dsize[1] - 1) / 2, (model.dsize[2] - 1) / 2];
-
-                const s0 = model.dsize[0];
-                const s1 = model.dsize[0] * model.dsize[1];
-
-                var vmap = model.vmap;
-                var dsize = model.dsize;
-                for (var z = 0; z < model.dsize[2]; z++) {
-                    for (var y = 0; y < model.dsize[1]; y++) {
-                        for (var x = 0; x < model.dsize[0]; x++) {
-                            const p = z * s1 + y * s0 + x;
-
-                            if (vmap[p] > 0) {
-                                var flag = false;
-                                if (x == 0 || y == 0 || z == 0 || x == dsize[0] - 1 || y == dsize[1] - 1 || z == dsize[2] - 1) {
-                                    flag = true;
-                                }
-                                else {
-                                    const p0 = p - 1;
-                                    const p1 = p + 1;
-                                    const p2 = p - s0;
-                                    const p3 = p + s0;
-                                    const p4 = p - s1;
-                                    const p5 = p + s1;
-                                    if (
-                                        vmap[p0] > 0 || vmap[p1] > 0 || vmap[p2] > 0 ||
-                                        vmap[p3] > 0 || vmap[p4] > 0 || vmap[p5] > 0) {
-                                        flag = true;
-                                    }
-                                }
-                                if (flag == true) {
-                                    const c = model.cmap[p];
-                                    var mesh = new THREE.Mesh(box[c]);
-                                    mesh.position.set(x - offset[0], y - offset[1], z - offset[2]);
-                                    mesh.updateMatrix();
-                                    geom.merge(mesh.geometry, mesh.matrix);
-                                }
-                            }
-                        }
-                    }
-                }
-                group.add(new THREE.Mesh(geom, material));
-            }
-
-            unit.vox = group;
-
-        }
-
-        {
-            var group = new THREE.Object3D();
-
-            for (var l = 0; l < stage.layouts.length; l++) {
-                const u = stage.layouts[l].unit;
-                const unit = stage.units[u];
-                const trns = stage.layouts[l].trns;
-
-                var vox = new THREE.Object3D();
-                vox.copy(unit.vox, true);
-
-                var offset = (unit.models[0].dsize[1] - 1) / 2;
-                vox.position.set(trns.pos[0], trns.pos[1] + offset, trns.pos[2]);
-                vox.rotation.set(trns.ang[0] * 3.14 / 180, trns.ang[1] * 3.14 / 180, trns.ang[2] * 3.14 / 180);
-                group.add(vox);
-            }
-            stage.object = group;
-        }
-
-        //var matrix = new THREE.Matrix4();
-        //matrix.makeTranslation(1000, 0, 0);
-        //vox.matrix.setPosition(new THREE.Vector3(100, 100, 0));
-
-    }
 })();
 
 
-var mogtest = function () {
-    var func = function (stage) {
+(function() {
+    'use strict';
 
-        // サイズを指定
-        const width = 640;
-        const height = 480;
+    function _gl(mog_viewport, mog_canvas, params = {}) {
+        const buffer = (params.preserveDrawingBuffer) ? true : false;
+        const fov = (params.fov === undefined) ? 60 : params.fov;
+        const move = (params.move === undefined || params.move) ? true : false;
+        const antialias = (params.antialias === undefined || params.antialias) ? true : false;
+        const smapscale = (params.smapscale) ? params.smapscale : 0.6;
 
-        // レンダラーを作成
-        const renderer = new THREE.WebGLRenderer({
-            canvas: document.querySelector('#mogcanvas')
-        });
-        renderer.setSize(width, height);
-        renderer.setClearColor(0xffffff);
-
-        // シーンを作成
-        const scene = new THREE.Scene();
-
-        // カメラを作成
-        const camera = new THREE.PerspectiveCamera(
-            45,
-            width / height,
-            1,
-            10000
-        );
-        camera.position.set(40, 50, +130);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-        // コンテナーを作成
-        const container = new THREE.Object3D();
-        scene.add(container);
-
-
-        // 平行光源を作成
-        const directionalLight = new THREE.DirectionalLight(0x888888);
-        directionalLight.position.set(1, 1, 1);
-        scene.add(directionalLight);
-        // 環境光を作成
-        const ambientLight = new THREE.AmbientLight(0x888888);
-        scene.add(ambientLight);
-
+        const gl = this;
         {
-            container.add(stage.object);
-            //container.add(stage.units[0].vox);
-        }
-        tick();
+            gl.renderer = new THREE.WebGLRenderer({ canvas: mog_canvas, antialias: antialias, alpha: true, preserveDrawingBuffer: buffer, });
+            gl.renderer.sortObjects = false;
+            gl.renderer.setClearColor(0xFFFFFF, 0.0);
+            gl.renderer.shadowMap.enabled = true;
+            gl.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        var clicked = false;
-        // 毎フレーム時に実行されるループイベントです
-        function tick() {
-            // メッシュを回転させる
-            if (clicked == false) {
-                container.rotation.y += 0.002;
+            gl.camera = new THREE.PerspectiveCamera(fov, mog_viewport.clientWidth / mog_viewport.clientHeight, 0.1, 1000.0);
+        }
+
+        function resize() {
+            const w = mog_viewport.clientWidth;
+            const h = mog_viewport.clientHeight;
+
+            let size = new THREE.Vector2();
+            gl.renderer.getSize(size);
+
+            let _fov;
+            if(gl.camera.aspect > 1){
+                const r = (gl.camera.aspect - 1) / 5;
+                _fov = fov * Math.max(0.7, (1.0 + r) * h / Math.sqrt(w * h));
+            }
+            else{
+                _fov = fov * Math.max(0.7, 0.5 * (h + w) / Math.sqrt(w * h));
             }
 
-            // レンダリング
-            renderer.render(scene, camera);
+            if(w == size.x && h == size.y && gl.camera.fov == _fov) return;
+            console.log(size, w, h, gl.camera.fov, _fov);
 
-            requestAnimationFrame(tick);
+            gl.renderer.setPixelRatio(window.devicePixelRatio);
+            gl.renderer.setSize(w, h);
+            gl.camera.aspect = w / h;
+            gl.camera.fov = _fov;
+            gl.camera.updateProjectionMatrix();
         }
+        resize();
+        window.addEventListener('resize', resize);
 
+        gl.scene = new THREE.Scene();
         {
-            var mousedown = false;
-            renderer.domElement.addEventListener('mousedown', function (e) {
-                mousedown = true;
-                clicked = true;
-                prevPosition = { x: e.pageX, y: e.pageY };
-            }, false);
+            gl.layers = new Array(3);
+            for(let i = 0; i < gl.layers.length; i++){
+                gl.layers[i] = new THREE.Object3D();
+                gl.scene.add(gl.layers[i]);
+            }
 
-            renderer.domElement.addEventListener('mousemove', function (e) {
-                if (!mousedown) return;
-                moveDistance = { x: prevPosition.x - e.pageX, y: prevPosition.y - e.pageY };
-                container.rotation.x -= moveDistance.y * 0.01;
-                container.rotation.y -= moveDistance.x * 0.01;
+            gl.scene.fog = new THREE.Fog(0xFFFFFF, 0.1, 30.0);
 
-                prevPosition = { x: e.pageX, y: e.pageY };
-                renderer.render(scene, camera);
-            }, false);
+            gl.drcLight = new THREE.DirectionalLight(0xFFFFFF, 0.34);
+            gl.scene.add(gl.drcLight);
 
-            renderer.domElement.addEventListener('mouseup', function (e) {
-                mousedown = false;
-            }, false);
+            gl.drcLight2 = new THREE.DirectionalLight(0xFFFFFF, 0.09);
+            gl.scene.add(gl.drcLight2);
+
+            gl.ambLight = new THREE.AmbientLight(0xFFFFFF, 0.74, 0);
+            gl.scene.add(gl.ambLight);
+
+            gl.drcLight.castShadow = true;
+            gl.drcLight.shadow.bias = -0.0001;
+            gl.drcLight.shadow.mapSize.width = 1024;
+            gl.drcLight.shadow.mapSize.height = 1024;
+            gl.drcpos = [3.0, 6.0, 4.0];
         }
-    };
-    mog.load("https://www.mog3d.com/model.mog", func);
 
-}
+        gl.render = function () {
+            const d = gl.camera.position.length();
+            {
+                const f = Math.max(d, 5.0);
+                gl.scene.fog.near = f * 1.0;
+                gl.scene.fog.far  = f * 30.0;
+
+                gl.camera.near = d * 0.1;
+                gl.camera.far = f * 60.0;
+            }
+
+            {
+                const r = Math.abs(gl.camera.position.y) / gl.camera.position.length();
+
+                const s = Math.max(d, 1.4);
+                const t = d * (2 - r);
+
+                gl.drcLight.shadow.bias = -0.0001;
+                gl.drcLight.position.set(s * gl.drcpos[0], s * gl.drcpos[1], s * gl.drcpos[2]);
+                gl.drcLight2.position.set(-s * gl.drcpos[0], -s * gl.drcpos[1] * 0.1, -s * gl.drcpos[2] * 0.5);
+                gl.drcLight.shadow.camera.left   = -t * smapscale;
+                gl.drcLight.shadow.camera.right  = +t * smapscale;
+                gl.drcLight.shadow.camera.top    = -t * smapscale;
+                gl.drcLight.shadow.camera.bottom = +t * smapscale;
+                gl.drcLight.shadow.camera.near   = +s * smapscale;
+                gl.drcLight.shadow.camera.far    = +s * 100.0;
+                gl.drcLight.shadow.camera.fov    = 50;
+                gl.drcLight.shadow.camera.updateProjectionMatrix ();
+
+            }
+            
+            gl.camera.updateProjectionMatrix();
+            gl.renderer.render(gl.scene, gl.camera);
+        };
+        
+        gl.clock = new THREE.Clock();
+
+        //const stats = new Stats();
+        //stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        //document.body.appendChild(stats.dom);
+        let frame = 0;
+        function update() {
+            resize();
+            if (move === true && gl.loop !== false){
+                requestAnimationFrame(update);
+            }
+            else{
+                if (gl.update) gl.update();
+                gl.render();
+
+                gl.remove(gl.layers[0]);
+                gl.remove(gl.layers[1]);
+                gl.remove(gl.layers[2]);
+                return;
+            }
+
+            frame++;
+            if (frame % 2 == 0) {
+                return;
+            }
+
+            // stats.begin();
+            if (gl.update) gl.update();
+            gl.render();
+            // stats.end();
+        };
+
+        gl.start = function(){
+            update();
+        }
+    }
+
+    mog.gl = _gl;
+
+    mog.tex = {};
+
+    mog.tex.block = (function () {
+        const m = 16;
+        const s = m * 8;
+        const data = new Uint8Array(s * s * 3);
+        const c = (s - 1) / 2.0;
+
+        for (let v = 0; v < s; v += m) {
+            for (let u = 0; u < s; u += m) {
+                const r = Math.round(Math.random() * 8);
+
+                for (let y = 0; y < m; y++) {
+                    for (let x = 0; x < m; x++) {
+                        let val = 0;
+
+                        const t = Math.max(Math.abs((v + y) - c), Math.abs((u + x) - c)) - c;
+                        if (t < -1.0) {
+                            val = Math.round(255 - 0);
+                        }
+                        else if (t < 0.0) {
+                            val = Math.round(255 - 16);
+                        }
+                        else {
+                            val = Math.round(255 - 31);
+                        }
+
+                        const p = ((v + y) * s + (u + x)) * 3;
+                        data[p + 0] = val - r;
+                        data[p + 1] = val - r;
+                        data[p + 2] = val - r;
+                    }
+                }
+            }
+        }
+
+        const tex = new THREE.DataTexture(data, s, s, THREE.RGBFormat, THREE.UnsignedByteType);
+        //tex.needsUpdate = true;
+        tex.generateMipmaps = true;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        return tex;
+    })();
+
+    function genDomeTex(param) {
+        const s = 32;
+        const data = new Uint8Array(s * s * 3);
+
+        const g = param.gradation;
+        for (let v = 0; v < s; v++) {
+            for (let u = 0; u < s; u++) {
+                const p = (v * s + u) * 3;
+                const t = (s - 1) / 2;
+                if(v > t){
+                    data[p + 0] = Math.round(g[0][0] + ((g[1][0] - g[0][0]) * (v - t) / t));
+                    data[p + 1] = Math.round(g[0][1] + ((g[1][1] - g[0][1]) * (v - t) / t));
+                    data[p + 2] = Math.round(g[0][2] + ((g[1][2] - g[0][2]) * (v - t) / t));
+                }
+                else{
+                    data[p + 0] = g[0][0];
+                    data[p + 1] = g[0][1];
+                    data[p + 2] = g[0][2];
+                }
+            }
+        }
+        const tex = new THREE.DataTexture(data, s, s, THREE.RGBFormat, THREE.UnsignedByteType);
+        //tex.needsUpdate = true;
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        return tex;
+    };
+
+    mog.tex.stddome = genDomeTex({ gradation: [[238, 244, 248], [255, 255, 255]], });
+    mog.tex.skydome = genDomeTex({ gradation: [[ 130, 240, 255], [ 40,  70, 205]], });
+
+    _gl.prototype.mkDome = function (size, params) {
+        const dome = { object: null };
+        dome.object = new THREE.Mesh(new THREE.SphereGeometry(size, 25, 25), new THREE.MeshBasicMaterial(params));
+        dome.object.material.side = THREE.BackSide;
+
+        dome.upscale = function(scale){
+            dome.object.scale.set(scale, scale, scale);
+        }
+        return dome;
+    }
+
+    _gl.prototype.mkGround = function (size, params){
+        const ground = { object: null };
+        ground.object = new THREE.Mesh(new THREE.PlaneGeometry(size, size, 1, 1), new THREE.MeshLambertMaterial(params));
+        ground.object.rotation.x = -90 / 180 * Math.PI
+        ground.object.receiveShadow = true;
+        ground.object.material.opacity = 0.7;
+        return ground;
+    }
+
+    function _remove (obj) { 
+        while(obj.children.length > 0){ 
+            _remove(obj.children[0]) 
+            obj.remove(obj.children[0]); 
+        } 
+        if (obj.geometry) obj.geometry.dispose() 
+        if (obj.material) obj.material.dispose() 
+        if (obj.texture) obj.texture.dispose() 
+    }
+
+    _gl.prototype.remove = function (obj) { 
+        const parent = obj.parent;
+        _remove(obj);
+        parent.remove(obj);
+    } 
+})();
+
+
